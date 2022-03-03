@@ -1,0 +1,45 @@
+.ui.borderless.topmenu.menu {
+  box-shadow: none;
+  padding-top: 14px;
+}
+
+.empty {
+  border-style: groove;
+  border-color: #d3d6da;
+}
+
+.correct {
+  background-color: #6aaa64;
+  color: white;
+}
+
+.almost {
+  background-color: #c9b458;
+}
+
+.wrong {
+  background-color: #86888a;
+}
+
+.tile {
+  width: 62px;
+  height: 62px;
+  margin-right: 2px;
+  margin-left: 2px;
+  text-align: center;
+  vertical-align: middle;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wordrow {
+  display: flex;
+  flex-flow: row;
+  justify-content: center;
+
+  margin: 4px;
+  list-style: none;
+}
+
