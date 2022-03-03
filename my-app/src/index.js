@@ -8,7 +8,8 @@ import * as words from './word-bank.json';
 const wordBank = words;
 let keyWord = wordBank.valid[Math.floor(Math.random() * wordBank.valid.length)];
 keyWord = keyWord.toUpperCase();
-let guessedLetters = [];
+console.log(`The keyword is ${keyWord}`);
+let guessedLetters = {  };
 
 class TopMenu extends  React.Component {
 
@@ -49,7 +50,8 @@ class Board extends React.Component {
       word5: '',
       word6: '',
       currentWord: 'word1',
-      currentMessage: 'I\'ll let you know what\'s up'
+      currentMessage: '',
+      isPlaying: true
     };
   }
 
@@ -62,7 +64,7 @@ class Board extends React.Component {
   }
 
   handleClick = () => {
-    console.log(setColors('AEIOU'));
+    this.replay();
   }
 
   handleKey = (e) => {
@@ -79,30 +81,64 @@ class Board extends React.Component {
     }
   }
 
+  testCallback(message){
+    if(message.length === 1 && message.match(/[a-z]/i)) {
+      this.submitLetter(message.toUpperCase());
+    }
+
+    if(message == "Enter"){
+      this.submitWord(this.state.currentGuess);
+    }
+
+    if(message == "Backspace"){
+      this.deleteLetter()
+    }
+  }
+
   submitLetter = (l) => {
+    if(!this.state.isPlaying) {
+      return;
+    }
     if(this.state.currentGuess.length >= 5){
       return;
     }
-    this.setState({currentGuess: this.state.currentGuess + l});
-    let key = this.state.currentWord;
-    this.setState({ [key] : this.state.currentGuess});
+    this.setState({currentGuess: this.state.currentGuess + l}, this.changeCurrentWord);
+
   }
 
 
   submitWord = (word) => {
+    if(!this.state.isPlaying) {
+      return;
+    }
     let currentWord = this.state.currentWord;
     let num = currentWord.charAt((currentWord.length) - 1);
     if(word.length != 5){
-      console.log("nope");
       return;
     }
 
     if(currentWord == "word6"){
-      console.log("endgame");
-      return;
+      if(! isValidWord(this.state.currentGuess)){
+        this.setState({currentMessage: this.state.currentGuess + ' is not a valid word'});
+        return;
+      }
+      if(this.state.currentGuess == keyWord){
+        this.setState({currentMessage: "Congratulations!"});
+        this.setState({isPlaying: false});
+      }else{
+        this.setState({currentMessage: `The correct word was ${keyWord}`});
+        this.setState({isPlaying: false});
+      }
+      let key = this.state.currentWord;
+      this.setState({ [key] : this.state.currentGuess + setColors(this.state.currentGuess)});
     }
 
     if(isValidWord(this.state.currentGuess)){
+      if(this.state.currentGuess == keyWord){
+        this.setState({currentMessage: "Congratulations!"});
+        this.setState({isPlaying: false});
+      }
+
       let key = this.state.currentWord;
       this.setState({ [key] : this.state.currentGuess + setColors(this.state.currentGuess)});
       num++;
@@ -116,13 +152,39 @@ class Board extends React.Component {
   }
 
   deleteLetter = () => {
+    if(!this.state.isPlaying) {
+      return;
+    }
     if(this.state.currentGuess.length >= 0){
       let word = this.state.currentGuess;
-      this.setState({currentGuess: word.substring(0, word.length - 1)});
+      this.setState({currentGuess: word.substring(0, word.length - 1)}, this.changeCurrentWord);
     }
+  }
+
+  replay = () => {
+    this.setState({isPlaying: true});
+    keyWord = wordBank.valid[Math.floor(Math.random() * wordBank.valid.length)];
+    keyWord = keyWord.toUpperCase();
+    console.log(`The keyword is ${keyWord}`);
+    guessedLetters = [];
+    this.setState({
+      currentGuess: '',
+      word1: '',
+      word2: '',
+      word3: '',
+      word4: '',
+      word5: '',
+      word6: '',
+      currentWord: 'word1',
+      currentMessage: ''
+    })
+  }
+
+  changeCurrentWord = () => {
     let key = this.state.currentWord;
     this.setState({ [key] : this.state.currentGuess});
   }
+
 
   render() {
     return (
@@ -170,15 +232,71 @@ class Board extends React.Component {
           <Tile tileType={letterToClass(this.state.word6[9])} displayedLetter={this.state.word6[4]}/>
         </div>
 
-        <Button onClick={this.handleClick}>
-          Test Button
+        <Container textAlign='center'>
+          <Button onClick={this.handleClick} disabled={this.state.isPlaying}>
+          Restart
         </Button>
+          <h1>{this.state.currentMessage}</h1>
+        </Container>
 
-        <h1>Your guess for {this.state.currentWord} is {this.state.currentGuess}</h1>
-        <h1>The Keyword is {keyWord}</h1>
-        <h1>{this.state.currentMessage}</h1>
+        <Keyboard keyCallback={(message) => this.testCallback(message)}/>
 
       </Container>
+    )
+  }
+}
+
+class Keyboard extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.keyboardPress = this.keyboardPress.bind(this);
+  }
+
+  keyboardPress(message){
+    this.props.keyCallback(message);
+  }
+
+  render() {
+    return(
+        <Container>
+          <div className='kb wordrow'>
+            <Button className={letterToClass(guessedLetters['Q'])}  onClick={() => this.keyboardPress('Q')}>Q</Button>
+            <Button className={letterToClass(guessedLetters['W'])} onClick={() => this.keyboardPress('W')}>W</Button>
+            <Button className={letterToClass(guessedLetters['E'])} onClick={() => this.keyboardPress('E')}>E</Button>
+            <Button className={letterToClass(guessedLetters['R'])} onClick={() => this.keyboardPress('R')}>R</Button>
+            <Button className={letterToClass(guessedLetters['T'])} onClick={() => this.keyboardPress('T')}>T</Button>
+            <Button className={letterToClass(guessedLetters['Y'])} onClick={() => this.keyboardPress('Y')}>Y</Button>
+            <Button className={letterToClass(guessedLetters['U'])} onClick={() => this.keyboardPress('U')}>U</Button>
+            <Button className={letterToClass(guessedLetters['I'])} onClick={() => this.keyboardPress('I')}>I</Button>
+            <Button className={letterToClass(guessedLetters['O'])} onClick={() => this.keyboardPress('O')}>O</Button>
+            <Button className={letterToClass(guessedLetters['P'])} onClick={() => this.keyboardPress('P')}>P</Button>
+          </div>
+
+          <div className='wordrow'>
+            <Button className={letterToClass(guessedLetters['A'])} onClick={() => this.keyboardPress('A')}>A</Button>
+            <Button className={letterToClass(guessedLetters['S'])} onClick={() => this.keyboardPress('S')}>S</Button>
+            <Button className={letterToClass(guessedLetters['D'])} onClick={() => this.keyboardPress('D')}>D</Button>
+            <Button className={letterToClass(guessedLetters['F'])} onClick={() => this.keyboardPress('F')}>F</Button>
+            <Button className={letterToClass(guessedLetters['G'])} onClick={() => this.keyboardPress('G')}>G</Button>
+            <Button className={letterToClass(guessedLetters['H'])} onClick={() => this.keyboardPress('H')}>H</Button>
+            <Button className={letterToClass(guessedLetters['J'])} onClick={() => this.keyboardPress('J')}>J</Button>
+            <Button className={letterToClass(guessedLetters['K'])} onClick={() => this.keyboardPress('K')}>K</Button>
+            <Button className={letterToClass(guessedLetters['L'])} onClick={() => this.keyboardPress('L')}>L</Button>
+          </div>
+
+          <div className='wordrow'>
+            <Button onClick={() => this.keyboardPress('Enter')}>ENTER</Button>
+            <Button className={letterToClass(guessedLetters['Z'])} onClick={() => this.keyboardPress('Z')}>Z</Button>
+            <Button className={letterToClass(guessedLetters['X'])} onClick={() => this.keyboardPress('X')}>X</Button>
+            <Button className={letterToClass(guessedLetters['C'])} onClick={() => this.keyboardPress('C')}>C</Button>
+            <Button className={letterToClass(guessedLetters['V'])} onClick={() => this.keyboardPress('V')}>V</Button>
+            <Button className={letterToClass(guessedLetters['B'])} onClick={() => this.keyboardPress('B')}>B</Button>
+            <Button className={letterToClass(guessedLetters['N'])} onClick={() => this.keyboardPress('N')}>N</Button>
+            <Button className={letterToClass(guessedLetters['M'])} onClick={() => this.keyboardPress('M')}>M</Button>
+            <Button onClick={() => this.keyboardPress('Backspace')}><Icon name="window close outline" size='large'/></Button>
+          </div>
+        </Container>
     )
   }
 }
@@ -211,8 +329,10 @@ function setColors(word){
       color = 'G';
     }
 
+    guessedLetters[word[i]] = color;
     colors += color;
   }
+  
   return colors;
 }
 
