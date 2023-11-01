@@ -332,7 +332,7 @@ function setColors(word){
     guessedLetters[word[i]] = color;
     colors += color;
   }
-  
+
   return colors;
 }
 
